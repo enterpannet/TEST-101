@@ -1,0 +1,77 @@
+name: Deploy to Ubuntu with PM2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build (if script exists)
+        run: |
+          if [ -f package.json ]; then
+            npm run build --if-present
+          fi
+
+      - name: Deploy to Ubuntu via SSH and restart PM2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+
+            # เปลี่ยนเป็น path โปรเจกต์ของคุณบน Ubuntu
+            APP_DIR=/var/www/my-app
+            PM2_NAME=my-app
+
+            cd "$APP_DIR"
+
+            # ดึงโค้ดล่าสุดจาก main
+            git pull origin main
+
+            # ติดตั้ง dependencies
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+
+            # build ถ้ามีสคริปต์
+            if [ -f package.json ]; then
+              npm run build --if-present
+            fi
+
+            # ติดตั้ง pm2 ถ้ายังไม่มี
+            if ! command -v pm2 >/dev/null 2>&1; then
+              npm install -g pm2
+            fi
+
+            # รัน/รีสตาร์ทด้วย pm2 ผ่าน ecosystem.config.js
+            if pm2 list | grep -q "$PM2_NAME"; then
+              pm2 reload ecosystem.config.js --only "$PM2_NAME" --env production
+            else
+              pm2 start ecosystem.config.js --only "$PM2_NAME" --env production
+            fi
+
+            # ให้ pm2 รันอัตโนมัติหลัง reboot
+            pm2 save
