@@ -40,9 +40,9 @@ jobs:
           script: |
             set -e
 
-            # เปลี่ยนเป็น path โปรเจกต์ของคุณบน Ubuntu
-            APP_DIR=/var/www/my-app
-            PM2_NAME=my-app
+            # path โปรเจกต์บน Ubuntu (สร้างครั้งแรกด้วยคำสั่งด้านล่าง)
+            APP_DIR=/var/www/xcvr
+            PM2_NAME=xcvr
 
             cd "$APP_DIR"
 
