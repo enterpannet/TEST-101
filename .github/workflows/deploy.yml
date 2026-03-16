@@ -60,11 +60,11 @@ jobs:
               npm install -g pm2
             fi
 
-            # รัน/รีสตาร์ทด้วย pm2 ผ่าน ecosystem.config.js
+            # รัน/รีสตาร์ทด้วย pm2 ผ่าน ecosystem.config.cjs (CommonJS)
             if pm2 list | grep -q "$PM2_NAME"; then
-              pm2 reload ecosystem.config.js --only "$PM2_NAME" --env production
+              pm2 reload ecosystem.config.cjs --only "$PM2_NAME" --env production
             else
-              pm2 start ecosystem.config.js --only "$PM2_NAME" --env production
+              pm2 start ecosystem.config.cjs --only "$PM2_NAME" --env production
             fi
 
             # ให้ pm2 รันอัตโนมัติหลัง reboot
