@@ -30,8 +30,16 @@ jobs:
           if [ -f package.json ]; then
             npm run build --if-present
           fi
+      - name: Copy build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "."
+          target: "/var/www/xcvr"
 
-      - name: Deploy to Ubuntu via SSH and restart PM2
+      - name: Restart PM2 on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -40,26 +48,12 @@ jobs:
           script: |
             set -e
 
-            # path โปรเจกต์บน Ubuntu (สร้างครั้งแรกด้วยคำสั่งด้านล่าง)
             APP_DIR=/var/www/xcvr
             PM2_NAME=xcvr
 
+            # สร้างโฟลเดอร์ถ้ายังไม่มี
+            mkdir -p "$APP_DIR"
             cd "$APP_DIR"
-
-            # ดึงโค้ดล่าสุดจาก main
-            git pull origin main
-
-            # ติดตั้ง dependencies
-            if [ -f package-lock.json ]; then
-              npm ci
-            else
-              npm install
-            fi
-
-            # build ถ้ามีสคริปต์
-            if [ -f package.json ]; then
-              npm run build --if-present
-            fi
 
             # ติดตั้ง pm2 ถ้ายังไม่มี
             if ! command -v pm2 >/dev/null 2>&1; then
