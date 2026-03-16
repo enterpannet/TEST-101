@@ -2,9 +2,8 @@ module.exports = {
   apps: [
     {
       name: "xcvr",
-      // ใช้ npm script เป็น entry (เช่น Vite preview)
       script: "npm",
-      args: "run preview -- --port 3000",
+      args: "run preview -- --host 0.0.0.0 --port 3000",
       instances: 1,
       exec_mode: "fork",
       env: {
@@ -17,4 +16,3 @@ module.exports = {
     },
   ],
 };
-

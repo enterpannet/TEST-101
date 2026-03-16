@@ -1,0 +1,39 @@
+server {
+    server_name xcvr.d2km.online;
+
+    # ถ้ามี static files (เช่น /public) สามารถ map ตรงนี้ได้
+    # root /var/www/my-app/public;
+    # index index.html;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # (เลือกทำ) log แยก
+    access_log /var/log/nginx/xcvr.access.log;
+    error_log  /var/log/nginx/xcvr.error.log;
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/xcvr.d2km.online/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/xcvr.d2km.online/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = xcvr.d2km.online) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name xcvr.d2km.online;
+    return 404; # managed by Certbot
+
+
+}
