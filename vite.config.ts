@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  preview: {
+    host: '0.0.0.0',
+    port: 3000,
+    allowedHosts: ['xcvr.d2km.online'],
+  },
 })
